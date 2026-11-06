@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  // Null until onboarding is completed. "Has a favorite movie" = "onboarded".
+  favoriteMovie String?   @db.VarChar(100)
+
+  // Variant A: burst protection. Set while a fact is being generated;
+  // treated as expired after a timeout so a crashed request can't block forever.
+  factGenerationStartedAt DateTime?
+
+  accounts  Account[]
+  sessions  Session[]
+  facts     MovieFact[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MovieFact {
+  id        String   @id @default(cuid())
+  userId    String
+  movie     String   @db.VarChar(100)
+  fact      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Serves the cache lookup: "latest fact for this user + movie".
+  @@index([userId, movie, createdAt(sort: Desc)])
+}
+
+// ---------- Auth.js (Prisma adapter) models ----------
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
