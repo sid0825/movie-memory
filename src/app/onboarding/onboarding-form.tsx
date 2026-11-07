@@ -11,7 +11,7 @@ export function OnboardingForm() {
   return (
     <form action={formAction} className="flex w-full max-w-sm flex-col gap-3">
       <label htmlFor="movie" className="text-sm font-medium">
-        What's your favorite movie?
+        What&apos;s your favorite movie?
       </label>
       <input
         id="movie"
