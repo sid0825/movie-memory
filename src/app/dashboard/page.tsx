@@ -2,6 +2,8 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { Suspense } from "react";
+import { FactCard } from "./fact-card";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -63,7 +65,9 @@ export default async function DashboardPage() {
 
       <section className="rounded-xl border border-gray-200 p-6 dark:border-gray-800">
         <p className="text-sm text-gray-500">Fun fact</p>
-        <p className="mt-1 text-gray-400">Coming next…</p>
+        <Suspense fallback={<p className="mt-1 text-gray-400">Finding a fun fact…</p>}>
+          <FactCard userId={session.user.id} />
+        </Suspense>
       </section>
     </main>
   );
