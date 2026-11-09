@@ -3,7 +3,7 @@ import OpenAI from "openai";
 /** Anything that can turn a movie title into a fun fact. Tests pass a fake. */
 export type FactGenerator = (movie: string) => Promise<string>;
 
-const MODEL = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
+const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
 export const generateFactWithOpenAI: FactGenerator = async (movie) => {
   // Created per call so a missing key fails this request, not the whole app.
