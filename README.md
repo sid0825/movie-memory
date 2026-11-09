@@ -42,7 +42,7 @@ I considered Variant B but prioritized going deep on one variant over covering m
 ### 1. Install dependencies
 
 ```bash
-git clone <this-repo-url>
+git clone https://github.com/sid0825/movie-memory.git
 cd movie-memory
 npm install
 ```
