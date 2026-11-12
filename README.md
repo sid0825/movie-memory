@@ -288,6 +288,18 @@ On the dashboard, the fact is rendered inside a React `Suspense` boundary: the p
 | Burst protection | Three concurrent requests → one OpenAI call, one stored fact |
 | Failure handling | Falls back to the latest fact · friendly message with no raw error leaked · lock released after failure so a retry succeeds |
 
+#### Integration tests (real Postgres)
+
+`src/lib/fact-repository.integration.test.ts` runs the generation lock against a real Postgres database. It fires 20 concurrent lock attempts from 5 independent Prisma clients (separate connection pools, like separate app servers) and asserts exactly one wins, checks lock expiry and ownership, and runs the full fact service concurrently, asserting a single generation and a single stored fact. Replacing the atomic `UPDATE` with a naive read-then-write makes these tests fail (4 requests acquired the lock and 5 generated), confirming they detect the race.
+
+They are skipped unless `TEST_DATABASE_URL` points to a dedicated, disposable database:
+
+```bash
+export TEST_DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/movie_memory_test?schema=public"
+DATABASE_URL="$TEST_DATABASE_URL" npx prisma migrate deploy
+npx vitest run src/lib/fact-repository.integration.test.ts
+```
+
 ---
 
 ## Key tradeoffs
